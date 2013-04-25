@@ -25,6 +25,7 @@
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/history.h"
 #include "common/metadata.h"
 #include "common/grouping.h"
 #include "metadata_gen.h"
@@ -73,6 +74,29 @@ void dt_lua_image_push(lua_State * L,int imgid)
   luaA_push(L,dt_lua_image_t,&imgid);
 }
 
+static int image_get_history(lua_State*L)
+{
+  dt_lua_image_t imgid;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  GList * items = dt_history_get_items(imgid,true);
+  dt_lua_push_glist(L,items,dt_history_item_t);
+  while(items)
+  {
+    g_free(items->data);
+    items = items->next;
+  }
+  return 1;
+}
+
+
+static int image_reset_history(lua_State*L)
+{
+  dt_lua_image_t imgid;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  dt_history_delete_on_image(imgid);
+  return 0;
+}
+
 typedef enum
 {
   PATH,
@@ -88,6 +112,8 @@ typedef enum
   DESCRIPTION,
   RIGHTS,
   GROUP_LEADER,
+  GET_HISTORY,
+  RESET,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -105,6 +131,8 @@ const char *image_fields_name[] =
   "description",
   "rights",
   "group_leader",
+  "get_history",
+  "reset",
   NULL
 };
 
@@ -271,6 +299,16 @@ static int image_index(lua_State *L)
     case GROUP_LEADER:
       {
         luaA_push(L,dt_lua_image_t,&(my_image->group_id));
+        break;
+      }
+    case GET_HISTORY:
+      {
+        lua_pushcfunction(L,image_get_history);
+        break;
+      }
+    case RESET:
+      {
+        lua_pushcfunction(L,image_reset_history);
         break;
       }
     default:
@@ -470,7 +508,7 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
-  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","group_leader",NULL) ; // make these fields read-only
+  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","group_leader","get_history",NULL) ; // make these fields read-only
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
   lua_pushcfunction(L,group_with);

@@ -171,6 +171,7 @@ if(USE_LUA)
 			"lua/events.c"
 			"lua/glist.c"
 			"lua/gui.c"
+			"lua/history.c"
 			"lua/image.c"
 			"lua/init.c"
 			"lua/lua.c"

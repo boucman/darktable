@@ -23,6 +23,7 @@
 #include "lua/glist.h"
 #include "lua/gui.h"
 #include "lua/image.h"
+#include "lua/history.h"
 #include "lua/preferences.h"
 #include "lua/print.h"
 #include "lua/types.h"
@@ -52,6 +53,7 @@ static lua_CFunction init_funcs[] =
 {
   dt_lua_init_glist,
   dt_lua_init_image,
+  dt_lua_init_history,
   dt_lua_init_print,
   dt_lua_init_configuration,
   dt_lua_init_preferences,
