@@ -21,11 +21,13 @@
 #include "lua/glist.h"
 #include "lua/tags.h"
 #include "lua/database.h"
+#include "lua/styles.h"
 #include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/history.h"
+#include "common/styles.h"
 #include "common/metadata.h"
 #include "common/grouping.h"
 #include "metadata_gen.h"
@@ -114,6 +116,8 @@ typedef enum
   GROUP_LEADER,
   GET_HISTORY,
   RESET,
+  APPLY_STYLE,
+  CREATE_STYLE,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -133,6 +137,8 @@ const char *image_fields_name[] =
   "group_leader",
   "get_history",
   "reset",
+  "apply_style",
+  "create_style",
   NULL
 };
 
@@ -258,57 +264,16 @@ static int image_index(lua_State *L)
         }
         sqlite3_finalize(stmt);
         break;
+      }
 
-      }
-    case DESCRIPTION:
+    case APPLY_STYLE:
       {
-        sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_DESCRIPTION);
-        if(sqlite3_step(stmt) != SQLITE_ROW)
-        {
-          lua_pushstring(L,"");
-        }
-        else
-        {
-          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-        }
-        sqlite3_finalize(stmt);
-        break;
-
-      }
-    case RIGHTS:
-      {
-        sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_RIGHTS);
-        if(sqlite3_step(stmt) != SQLITE_ROW)
-        {
-          lua_pushstring(L,"");
-        }
-        else
-        {
-          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-        }
-        sqlite3_finalize(stmt);
-        break;
-
-      }
-    case GROUP_LEADER:
-      {
-        luaA_push(L,dt_lua_image_t,&(my_image->group_id));
+        lua_pushcfunction(L,image_apply_style);
         break;
       }
-    case GET_HISTORY:
+    case CREATE_STYLE:
       {
-        lua_pushcfunction(L,image_get_history);
-        break;
-      }
-    case RESET:
-      {
-        lua_pushcfunction(L,image_reset_history);
+        lua_pushcfunction(L,dt_lua_style_create_from_image);
         break;
       }
     default:
@@ -316,8 +281,64 @@ static int image_index(lua_State *L)
       return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
 
   }
+  case DESCRIPTION:
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_DESCRIPTION);
+    if(sqlite3_step(stmt) != SQLITE_ROW)
+    {
+      lua_pushstring(L,"");
+    }
+    else
+    {
+      lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+    }
+    sqlite3_finalize(stmt);
+    break;
+
+  }
+  case RIGHTS:
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_RIGHTS);
+    if(sqlite3_step(stmt) != SQLITE_ROW)
+    {
+      lua_pushstring(L,"");
+    }
+    else
+    {
+      lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+    }
+    sqlite3_finalize(stmt);
+    break;
+
+  }
+  case GROUP_LEADER:
+  {
+    luaA_push(L,dt_lua_image_t,&(my_image->group_id));
+    break;
+  }
+  case GET_HISTORY:
+  {
+    lua_pushcfunction(L,image_get_history);
+    break;
+  }
+  case RESET:
+  {
+    lua_pushcfunction(L,image_reset_history);
+    break;
+  }
+  default:
   releasereadimage(L,my_image);
-  return 1;
+  return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
+
+}
+releasereadimage(L,my_image);
+return 1;
 }
 
 static int image_newindex(lua_State *L)
@@ -508,7 +529,7 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
-  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","group_leader","get_history",NULL) ; // make these fields read-only
+  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","group_leader","get_history","apply_style","create_style",NULL) ; // make these fields read-only
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
   lua_pushcfunction(L,group_with);
