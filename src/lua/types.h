@@ -22,6 +22,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lautoc.h>
+#include "common/introspection.h"
+#include "libs/lib.h"
 
 /**
   these defines can be used with luaA_struct_member to have checks on read added
@@ -155,6 +157,7 @@ int dt_lua_init_types(lua_State *L);
 
 gboolean dt_lua_isa_type(lua_State*L,int index, luaA_Type type_id);
 gboolean dt_lua_typeisa_type(lua_State*L,luaA_Type obj_type, luaA_Type type_id);
+
 
 
 #endif

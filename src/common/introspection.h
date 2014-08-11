@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <glib.h>
+#include <string.h>
 
 // some typedefs for structs that hold the data in a machine readable form
 

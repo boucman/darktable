@@ -18,7 +18,10 @@
 #include "lua/iop.h"
 #include "lua/modules.h"
 #include "lua/types.h"
+#include "lua/introspection.h"
+#include "lua/call.h"
 #include "gui/gtk.h"
+
 
 static int version_member(lua_State *L)
 {
@@ -114,14 +117,6 @@ static int iop_tostring(lua_State* L)
 
 
 
-/*static int test_push(lua_State *L) {
-  dt_iop_module_aat * module =  *(dt_iop_module_aat**)lua_touserdata(L,-1);
-  luaA_Type preset_type = dt_lua_module_get_preset_type(L,"iop",module->op);
-  luaA_push_type(L,preset_type,module);
-  return 1;
-}
-static int test_get(lua_State * L){return luaL_error(L,"TBSL");}
-*/
 
 void dt_lua_register_iop(lua_State* L,dt_iop_module_so_t* module)
 {
@@ -132,6 +127,23 @@ void dt_lua_register_iop(lua_State* L,dt_iop_module_so_t* module)
   lua_pushcfunction(L,iop_tostring);
   lua_setfield(L,-2,"__tostring");
   lua_pop(L,1);
+
+  dt_introspection_t * intro = module->get_introspection();
+  dt_lua_register_introspected_type(L,intro);
+
+  /*if(intro ) {
+    void * data = malloc(intro->size);
+    memset(data,0,intro->size);
+    luaA_push_type(L,luaA_type_find(L,intro->type_name),data);
+    lua_pushcclosure(L,dt_lua_type_member_common,1);
+    dt_lua_type_register_const_type(L,my_type,"test_data");
+    free(data);
+  } else {
+    printf("nil for %s\n",module->op);
+    lua_newtable(L);
+    lua_pushcclosure(L,dt_lua_type_member_common,1);
+    dt_lua_type_register_const_type(L,my_type,"test_data");
+  }*/
 
 };
 

@@ -180,6 +180,31 @@ static GList * style_item_table_to_id_list(lua_State*L, int index)
   return result;
 }
 
+static dt_iop_module_so_t * style_item_get_iop(dt_style_item_t*item) 
+{
+  GList *modules = darktable.iop;
+  while(modules)
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
+    if (strncmp(module->op, item->name, strlen(module->op)) == 0) return module;
+    modules = g_list_next(modules);
+  }
+  return NULL;
+}
+
+static int item_param_member(lua_State *L)
+{
+  printf("TBSL check/update version info\n");
+  dt_style_item_t * item =luaL_checkudata(L,1,"dt_style_item_t");
+  dt_iop_module_so_t *module = style_item_get_iop(item);
+  if(!module) {
+    lua_pushnil(L);
+    return 1;
+  } else {
+    luaA_push_type(L,luaA_type_find(L,module->get_introspection()->type_name),item->params);
+    return 1;
+  }
+}
 /////////////////////////
 // toplevel and common
 /////////////////////////
@@ -314,6 +339,10 @@ int dt_lua_init_styles(lua_State * L)
   luaA_struct_member(L,dt_style_item_t,name,const_string);
   lua_pushcfunction(L,dt_lua_type_member_luaautoc);
   dt_lua_type_register_struct(L,dt_style_item_t);
+  lua_pushcfunction(L,item_param_member);
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_style_item_t,"get_parameters");
+
   luaL_getmetatable(L,"dt_style_item_t");
   lua_pushcfunction(L,style_item_gc);
   lua_setfield(L,-2,"__gc");
