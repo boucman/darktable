@@ -150,7 +150,7 @@ get_active_preset_name(dt_iop_module_t *module)
     void *blendop_params = (void *)sqlite3_column_blob(stmt, 2);
     int32_t bl_params_size = sqlite3_column_bytes(stmt, 2);
     int enabled = sqlite3_column_int(stmt, 3);
-    if(!memcmp(module->params, op_params, MIN(op_params_size, module->params_size)) &&
+    if(!memcmp(module->params, op_params, MIN(op_params_size, module->so->params_size)) &&
         !memcmp(module->blend_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) &&
         module->enabled == enabled)
     {
@@ -293,7 +293,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, g->module->op, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, g->module->version() );
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, g->module->params, g->module->params_size, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, g->module->params, g->module->so->params_size, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, g->module->enabled);
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, g->module->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
@@ -600,7 +600,7 @@ menuitem_update_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, module->params, module->params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, module->params, module->so->params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, module->enabled);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, module->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, dt_develop_blend_version());
@@ -648,7 +648,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
     int bl_length = sqlite3_column_bytes(stmt, 2);
     int blendop_version = sqlite3_column_int(stmt, 3);
     int writeprotect = sqlite3_column_int(stmt, 4);
-    if(op_params && (op_length == module->params_size))
+    if(op_params && (op_length == module->so->params_size))
     {
       memcpy(module->params, op_params, op_length);
       module->enabled = enabled;
@@ -798,7 +798,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
         && strcmp(darktable.gui->last_preset, name)==0)
       found = 1;
 
-    if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size)) &&
+    if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->so->params_size)) &&
         !memcmp(module->default_blendop_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))) isdefault = 1;
     if(module && !memcmp(params, op_params, MIN(op_params_size, params_size)) &&
         !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) &&
@@ -889,7 +889,7 @@ void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t ve
 
 void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 {
-  dt_gui_presets_popup_menu_show_internal(module->op, module->version(), module->params, module->params_size, module->blend_params, module, &module->dev->image_storage, NULL, NULL);
+  dt_gui_presets_popup_menu_show_internal(module->op, module->version(), module->params, module->so->params_size, module->blend_params, module, &module->dev->image_storage, NULL, NULL);
 }
 
 void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const int32_t version, const char *maker, const char *model, const char *lens)

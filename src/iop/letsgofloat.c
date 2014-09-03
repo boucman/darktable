@@ -61,6 +61,8 @@ groups()
   return IOP_GROUP_BASIC;
 }
 
+int32_t params_size = sizeof(dt_iop_letsgofloat_params_t);
+
 int
 output_bpp(
   dt_iop_module_t *self,
@@ -191,7 +193,6 @@ init(
   self->hide_enable_button = 1;
   self->default_enabled = 1;
   self->priority = 5; // module order created by iop_dependencies.py, do not edit!
-  self->params_size = sizeof(dt_iop_letsgofloat_params_t);
   self->gui_data = NULL;
 }
 

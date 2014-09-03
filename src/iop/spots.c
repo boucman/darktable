@@ -65,6 +65,8 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
 }
 
+int32_t params_size = sizeof(dt_iop_spots_params_t);
+
 int legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
   if(old_version == 1 && new_version == 2)
@@ -458,7 +460,6 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   module->priority = 210; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:
   dt_iop_spots_params_t tmp = (dt_iop_spots_params_t)

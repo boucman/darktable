@@ -125,6 +125,8 @@ flags ()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+int32_t params_size = sizeof(dt_iop_exposure_params_t);
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
@@ -585,7 +587,6 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->histogram_params.bins_count = 16384; // we neeed really maximally reliable histogrem
   module->priority = 192; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
 }
 

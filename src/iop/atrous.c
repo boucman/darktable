@@ -125,6 +125,8 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+int32_t params_size = sizeof(dt_iop_atrous_params_t);
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
@@ -675,7 +677,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
   module->priority = 526; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
   tmp.octaves = 3;

@@ -71,6 +71,8 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int32_t params_size = sizeof(dt_iop_rawdenoise_params_t);
+
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -403,7 +405,6 @@ void init(dt_iop_module_t *module)
 
   // raw denoise must come just before demosaicing.
   module->priority = 122; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }
 

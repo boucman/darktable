@@ -687,7 +687,7 @@ int dt_imageio_export_with_flags(
 
           if(m->legacy_params && (s->module_version != m->version()))
           {
-            void *new_params = malloc(m->params_size);
+            void *new_params = malloc(m->so->params_size);
             m->legacy_params (m, h->params, s->module_version, new_params, labs(m->version()));
 
             free (h->params);

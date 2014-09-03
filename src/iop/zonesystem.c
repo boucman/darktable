@@ -119,6 +119,8 @@ groups ()
   return IOP_GROUP_TONE;
 }
 
+int32_t params_size = sizeof(dt_iop_zonesystem_params_t);
+
 /* get the zone index of pixel lightness from zonemap */
 static inline int
 _iop_zonesystem_zone_index_from_lightness (float lightness,float *zonemap,int size)
@@ -418,7 +420,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
   module->priority = 631; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
   dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t)
   {

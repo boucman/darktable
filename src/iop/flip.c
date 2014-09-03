@@ -97,6 +97,8 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int32_t params_size = sizeof(dt_iop_flip_params_t);
+
 static dt_image_orientation_t
 merge_two_orientations(dt_image_orientation_t raw_orientation, dt_image_orientation_t user_orientation)
 {
@@ -438,7 +440,6 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_flip_params_t));
   module->default_params = malloc(sizeof(dt_iop_flip_params_t));
   module->default_enabled = 1;
-  module->params_size = sizeof(dt_iop_flip_params_t);
   module->gui_data = NULL;
   module->priority = 245; // module order created by iop_dependencies.py, do not edit!
 }

@@ -491,7 +491,7 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   sqlite3_finalize (stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = ?10 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->so->params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, h->module->version());
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, h->enabled);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, image->id);
@@ -545,12 +545,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       }
       hist->enabled = module->enabled;
       hist->module = module;
-      hist->params = malloc(module->params_size);
+      hist->params = malloc(module->so->params_size);
       hist->multi_priority = module->multi_priority;
       snprintf(hist->multi_name,sizeof(hist->multi_name),"%s",module->multi_name);
       /* allocate and set hist blend_params */
       hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-      memcpy(hist->params, module->params, module->params_size);
+      memcpy(hist->params, module->params, module->so->params_size);
       memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
       dev->history = g_list_append(dev->history, hist);
@@ -562,7 +562,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       // same operation, change params
       // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-      memcpy(hist->params, module->params, module->params_size);
+      memcpy(hist->params, module->params, module->so->params_size);
 
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
@@ -708,7 +708,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    memcpy(module->params, module->default_params, module->params_size);
+    memcpy(module->params, module->default_params, module->so->params_size);
     memcpy(module->blend_params, module->default_blendop_params,sizeof(dt_develop_blend_params_t));
     module->enabled = module->default_enabled;
     modules = g_list_next(modules);
@@ -718,7 +718,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   for(int i=0; i<cnt && history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    memcpy(hist->module->params, hist->params, hist->module->params_size);
+    memcpy(hist->module->params, hist->params, hist->module->so->params_size);
     memcpy(hist->module->blend_params, hist->blend_params, sizeof(dt_develop_blend_params_t));
 
     hist->module->enabled = hist->enabled;
@@ -958,7 +958,7 @@ void dt_dev_read_history(dt_develop_t *dev)
 
     int modversion = sqlite3_column_int(stmt, 2);
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
-    hist->params = malloc(hist->module->params_size);
+    hist->params = malloc(hist->module->so->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     snprintf(hist->multi_name,sizeof(hist->multi_name),"%s",multi_name);
     hist->multi_priority = multi_priority;
@@ -980,7 +980,7 @@ void dt_dev_read_history(dt_develop_t *dev)
       memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
     }
 
-    if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
+    if(hist->module->version() != modversion || hist->module->so->params_size != sqlite3_column_bytes(stmt, 4) ||
         strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
       if(!hist->module->legacy_params ||
@@ -1015,13 +1015,13 @@ void dt_dev_read_history(dt_develop_t *dev)
       if(!strcmp(hist->module->op, "flip") && hist->enabled == 0 &&
           labs(modversion) == 1)
       {
-        memcpy(hist->params, hist->module->default_params, hist->module->params_size);
+        memcpy(hist->params, hist->module->default_params, hist->module->so->params_size);
         hist->enabled = 1;
       }
     }
     else
     {
-      memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
+      memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->so->params_size);
     }
 
     // make sure that always-on modules are always on. duh.
@@ -1030,7 +1030,7 @@ void dt_dev_read_history(dt_develop_t *dev)
       hist->enabled = 1;
     }
 
-    // memcpy(hist->module->params, hist->params, hist->module->params_size);
+    // memcpy(hist->module->params, hist->params, hist->module->so->params_size);
     // hist->module->enabled = hist->enabled;
     // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
     dev->history = g_list_append(dev->history, hist);
@@ -1201,7 +1201,7 @@ void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
   if (!dev->proxy.exposure.module) return;
 
   dt_iop_module_t *exposure = dev->proxy.exposure.module;
-  memcpy(exposure->params, exposure->default_params, exposure->params_size);
+  memcpy(exposure->params, exposure->default_params, exposure->so->params_size);
   exposure->gui_update(exposure);
   dt_dev_add_history_item(exposure->dev, exposure, TRUE);
 }

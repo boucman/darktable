@@ -98,6 +98,7 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+int32_t params_size = sizeof(dt_iop_lowlight_params_t);
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
@@ -290,7 +291,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_lowlight_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
   module->priority = 578; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_lowlight_params_t);
   module->gui_data = NULL;
   dt_iop_lowlight_params_t tmp;
   for(int k=0; k<DT_IOP_LOWLIGHT_BANDS; k++) tmp.transition_x[k] = k/(DT_IOP_LOWLIGHT_BANDS-1.0);

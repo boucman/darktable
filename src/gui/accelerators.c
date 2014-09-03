@@ -727,7 +727,7 @@ static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group,
     const void *blendop_params = sqlite3_column_blob(stmt, 2);
     int bl_length = sqlite3_column_bytes(stmt, 2);
     int blendop_version = sqlite3_column_int(stmt, 3);
-    if(op_params && (op_length == module->params_size))
+    if(op_params && (op_length == module->so->params_size))
     {
       memcpy(module->params, op_params, op_length);
       module->enabled = enabled;

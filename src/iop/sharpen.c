@@ -85,6 +85,8 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+int32_t params_size = sizeof(dt_iop_sharpen_params_t);
+
 void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t)
@@ -541,7 +543,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_sharpen_params_t));
   module->default_enabled = 0;
   module->priority = 719; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_sharpen_params_t);
   module->gui_data = NULL;
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t)
   {

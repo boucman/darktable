@@ -97,6 +97,8 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+int32_t params_size = sizeof(dt_iop_colorize_params_t);
+
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
@@ -423,7 +425,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorize_params_t));
   module->default_enabled = 0;
   module->priority = 403; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_colorize_params_t);
   module->gui_data = NULL;
   dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t)
   {

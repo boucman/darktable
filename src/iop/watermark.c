@@ -197,6 +197,8 @@ operation_tags ()
   return IOP_TAG_DECORATION;
 }
 
+int32_t params_size = sizeof(dt_iop_watermark_params_t);
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE, NC_("accel", "refresh"), 0, 0);
@@ -1063,11 +1065,9 @@ void gui_update(struct dt_iop_module_t *self)
 void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_watermark_params_t));
-  module->params_size = sizeof(dt_iop_watermark_params_t);
   module->default_params = malloc(sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
   module->priority = 964; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)
   {

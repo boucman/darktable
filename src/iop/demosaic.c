@@ -129,6 +129,8 @@ flags ()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int32_t params_size = sizeof(dt_iop_demosaic_params_t);
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge threshold"));
@@ -1958,7 +1960,6 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 1;
   module->priority = 140; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
-  module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
 }
 

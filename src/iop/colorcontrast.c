@@ -101,6 +101,8 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+int32_t params_size = sizeof(dt_iop_colorcontrast_params_t);
+
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
@@ -266,7 +268,6 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   // we are pretty late in the pipe:
   module->priority = 789; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_colorcontrast_params_t);
   module->gui_data = NULL;
   // init defaults:
   dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t)

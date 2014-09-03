@@ -98,6 +98,7 @@ flags ()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int32_t params_size = sizeof(dt_iop_colorout_params_t);
 
 static gboolean key_softproof_callback(GtkAccelGroup *accel_group,
                                        GObject *acceleratable,
@@ -763,7 +764,6 @@ void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_colorout_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
-  module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
   module->priority = 807; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;

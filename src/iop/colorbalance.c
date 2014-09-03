@@ -97,6 +97,7 @@ int groups()
   return IOP_GROUP_COLOR;
 }
 
+int32_t params_size = sizeof(dt_iop_colorbalance_params_t);
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -251,7 +252,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorbalance_params_t));
   module->default_enabled = 0;
   module->priority = 368; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_colorbalance_params_t);
   module->gui_data = NULL;
   dt_iop_colorbalance_params_t tmp = (dt_iop_colorbalance_params_t)
   {

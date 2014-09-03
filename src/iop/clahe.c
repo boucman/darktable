@@ -77,6 +77,8 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
 }
 
+int32_t params_size = sizeof(dt_iop_rlce_params_t);
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_rlce_data_t *data = (dt_iop_rlce_data_t *)piece->data;
@@ -309,7 +311,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_rlce_params_t));
   module->default_enabled = 0;
   module->priority = 912; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
   dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t)
   {

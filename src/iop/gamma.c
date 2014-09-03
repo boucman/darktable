@@ -64,6 +64,8 @@ int flags()
   return IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int32_t params_size = sizeof(dt_iop_gamma_params_t);
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
@@ -177,7 +179,6 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_gamma_data_t));
   module->params = malloc(sizeof(dt_iop_gamma_params_t));
   module->default_params = malloc(sizeof(dt_iop_gamma_params_t));
-  module->params_size = sizeof(dt_iop_gamma_params_t);
   module->gui_data = NULL;
   module->priority = 1000; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;

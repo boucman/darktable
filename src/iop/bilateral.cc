@@ -83,6 +83,8 @@ extern "C"
     return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORTS_BLENDING;
   }
 
+  int32_t params_size = sizeof(dt_iop_bilateral_params_t);
+
   void init_key_accels(dt_iop_module_so_t *self)
   {
     dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
@@ -307,7 +309,6 @@ extern "C"
     module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_enabled = 0;
   module->priority = 298; // module order created by iop_dependencies.py, do not edit!
-    module->params_size = sizeof(dt_iop_bilateral_params_t);
     module->gui_data = NULL;
     dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t)
     {

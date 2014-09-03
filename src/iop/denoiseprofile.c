@@ -141,6 +141,8 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+int32_t params_size = sizeof(dt_iop_denoiseprofile_params_t);
+
 typedef union floatint_t
 {
   float f;
@@ -1514,7 +1516,6 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_denoiseprofile_params_t));
   module->default_params = malloc(sizeof(dt_iop_denoiseprofile_params_t));
   module->priority = 157; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;
   module->data = NULL;
 }

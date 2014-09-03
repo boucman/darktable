@@ -82,6 +82,7 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
+int32_t params_size             = sizeof(dt_iop_overexposed_t);
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
@@ -243,7 +244,6 @@ void init(dt_iop_module_t *module)
   module->hide_enable_button      = 1;
   module->default_enabled         = 1;
   module->priority = 929; // module order created by iop_dependencies.py, do not edit!
-  module->params_size             = sizeof(dt_iop_overexposed_t);
   module->gui_data                = NULL;
 }
 

@@ -89,6 +89,7 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+int32_t params_size = sizeof(dt_iop_colisa_params_t);
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
@@ -327,7 +328,6 @@ init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colisa_params_t));
   module->default_enabled = 0;
   module->priority = 614; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_colisa_params_t);
   module->gui_data = NULL;
   dt_iop_colisa_params_t tmp = (dt_iop_colisa_params_t)
   {

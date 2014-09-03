@@ -90,6 +90,8 @@ flags ()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int32_t params_size = sizeof(dt_iop_temperature_params_t);
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
@@ -570,7 +572,6 @@ void init (dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
   module->priority = 52; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
 

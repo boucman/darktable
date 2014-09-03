@@ -131,13 +131,13 @@ default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe
 static void
 default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  memcpy(piece->data, params, self->params_size);
+  memcpy(piece->data, params, self->so->params_size);
 }
 
 static void
 default_init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(self->params_size);
+  piece->data = malloc(self->so->params_size);
   default_commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -270,6 +270,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
     if(!g_module_symbol(module->module, "get_f",                    (gpointer)&(module->get_f)))                    goto error;
     if(!g_module_symbol(module->module, "get_introspection",        (gpointer)&(module->get_introspection)))        goto error;
     if(!g_module_symbol(module->module, "get_introspection_linear", (gpointer)&(module->get_introspection_linear))) goto error;
+    if(!g_module_symbol(module->module, "params_size", (gpointer)&(module->params_size))) goto error;
   }
 
 #ifdef USE_LUA
@@ -406,7 +407,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
     fprintf(stderr, "[iop_load_module] `%s' needs to set priority!\n", so->op);
     return 1;      // this needs to be set
   }
-  if(module->params_size == 0)
+  if(module->so->params_size == 0)
   {
     fprintf(stderr, "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
     return 1;      // empty params hurt us in many places, just add a dummy value
@@ -706,7 +707,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
     if(copy_params)
     {
-      memcpy(module->params, base->params, module->params_size);
+      memcpy(module->params, base->params, module->so->params_size);
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
       {
         memcpy(module->blend_params, base->blend_params, sizeof(dt_develop_blend_params_t));
@@ -1008,7 +1009,7 @@ init_presets(dt_iop_module_so_t *module_so)
       }
 
       module->init(module);
-      if(module->params_size == 0)
+      if(module->so->params_size == 0)
       {
         dt_iop_cleanup_module(module);
         free(module);
@@ -1019,7 +1020,7 @@ init_presets(dt_iop_module_so_t *module_so)
       if(module->reload_defaults)
         module->reload_defaults(module);
 
-      int32_t new_params_size = module->params_size;
+      int32_t new_params_size = module->so->params_size;
       void *new_params = calloc(1, new_params_size);
 
       // convert the old params to new
@@ -1066,7 +1067,7 @@ init_presets(dt_iop_module_so_t *module_so)
         continue;
       }
 
-      if(module->params_size == 0)
+      if(module->so->params_size == 0)
       {
         dt_iop_cleanup_module(module);
         free(module);
@@ -1258,18 +1259,18 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
   if(piece->enabled)
   {
     /* construct module params data for hash calc */
-    int length = module->params_size;
+    int length = module->so->params_size;
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) length += sizeof(dt_develop_blend_params_t);
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,blendop_params->mask_id);
     length += dt_masks_group_get_hash_buffer_length(grp);
 
     char *str = malloc(length);
-    memcpy(str, module->params, module->params_size);
-    int pos = module->params_size;
+    memcpy(str, module->params, module->so->params_size);
+    int pos = module->so->params_size;
     /* if module supports blend op add blend params into account */
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      memcpy(str+module->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
+      memcpy(str+module->so->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
       pos += sizeof(dt_develop_blend_params_t);
     }
     memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
@@ -1369,7 +1370,7 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
     dt_dev_masks_list_change(module->dev);
   }
   /* reset to default params */
-  memcpy(module->params, module->default_params, module->params_size);
+  memcpy(module->params, module->default_params, module->so->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
 
   /* reset ui to its defaults */

@@ -68,6 +68,8 @@ int flags ()
   return IOP_FLAGS_ONE_INSTANCE;
 }
 
+int32_t params_size = sizeof(dt_iop_cacorrect_params_t);
+
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1244,7 +1246,6 @@ void init(dt_iop_module_t *module)
 
   // we come just before demosaicing.
   module->priority = 87; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
 }
 

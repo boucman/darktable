@@ -81,6 +81,8 @@ const char *name()
   return _("denoise (non-local means)");
 }
 
+int32_t params_size = sizeof(dt_iop_nlmeans_params_t);
+
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
@@ -585,7 +587,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
   // about the first thing to do in Lab space:
   module->priority = 473; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
   module->data = NULL;
 }

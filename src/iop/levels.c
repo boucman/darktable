@@ -134,6 +134,8 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+int32_t params_size = sizeof(dt_iop_levels_params_t);
+
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
@@ -494,7 +496,6 @@ void init(dt_iop_module_t *self)
   self->default_enabled = 0;
   self->request_histogram |= (DT_REQUEST_ON);
   self->priority = 649; // module order created by iop_dependencies.py, do not edit!
-  self->params_size = sizeof(dt_iop_levels_params_t);
   self->gui_data = NULL;
 }
 
@@ -1006,7 +1007,7 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
     {
       // Reset
       dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-      memcpy(self->params, self->default_params, self->params_size);
+      memcpy(self->params, self->default_params, self->so->params_size);
 
       // Needed in case the user scrolls or drags immediately after a reset,
       // as drag_start_percentage is only updated when the mouse is moved.

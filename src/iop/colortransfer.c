@@ -116,6 +116,8 @@ int flags ()
   return IOP_FLAGS_DEPRECATED | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_PREVIEW_NON_OPENCL;
 }
 
+int32_t params_size = sizeof(dt_iop_colortransfer_params_t);
+
 #if 0
 void init_key_accels(dt_iop_module_so_t *self)
 {
@@ -443,7 +445,7 @@ apply_button_pressed (GtkButton *button, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
-  memcpy(p, &(g->flowback), self->params_size);
+  memcpy(p, &(g->flowback), self->so->params_size);
   p->flag = APPLY;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -559,7 +561,6 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
   module->priority = 421; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;
   tmp.flag = NEUTRAL;

@@ -73,6 +73,8 @@ int flags ()
   return IOP_FLAGS_ONE_INSTANCE;
 }
 
+int32_t params_size = sizeof(dt_iop_invert_params_t);
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE,
@@ -391,7 +393,6 @@ void init(dt_iop_module_t *module)
   module->params = g_malloc0(sizeof(dt_iop_invert_params_t));
   module->default_params = g_malloc0(sizeof(dt_iop_invert_params_t));
   module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_invert_params_t);
   module->gui_data = NULL;
   module->priority = 35; // module order created by iop_dependencies.py, do not edit!
 }
