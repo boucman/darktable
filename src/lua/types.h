@@ -57,6 +57,13 @@ typedef double progress_double; // a double in [0.0,1.0] any value out of bound 
  * __newindex : will look into the __set table to find a callback, then raise an error
  * __get : empty table, contains getters, similar API to __index
  * __set : empty table, contains setters, similar API to __newindex
+ * __pre_* : called with the same convention as the corresponding function, 
+             allows to tweak before the real function is called
+ * __post_* : see in types.c for exact calling convention (documented at call site)
+             contains at least the object and the returned values
+             allows to tweak after the real function is called
+     can be : pairs,ipairs,next,inext,index,newindex
+ * __init : obj, ptr used to make obje to tweak obj before it's used
 
    */
 #define dt_lua_init_type(L,type_name) \
@@ -135,12 +142,6 @@ luaA_Type dt_lua_init_gpointer_type_type(lua_State* L,luaA_Type type_id);
  * push the single instance of the object on the stack
  */
 luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name,void* data);
-
-/**
- * similar to dt_lua_init_singleton but the singleton has push and pop functions to save/restor
- * the lua object called on
- */
-luaA_Type dt_lua_init_wrapped_singleton(lua_State* L, lua_CFunction pusher, lua_CFunction getter, const char* unique_name,void *data);
 
 
 int dt_lua_init_types(lua_State *L);

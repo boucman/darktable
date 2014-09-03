@@ -111,8 +111,27 @@ static void to_progress_double(lua_State* L, luaA_Type type_id, void* c_out, int
 /************************************/
 /* METATBLE CALLBACSK FOR AUTOTYPES */
 /************************************/
+
+/*
+static int debug_filter(lua_State *L)
+{
+  // do nothing and make sure we return everything as is
+  dt_lua_debug_stack(L);
+  return lua_gettop(L);
+}*/
+
+static void filter_call(lua_State*L,int obj_index,const char * call_name)
+{
+  if(!luaL_getmetafield(L,obj_index,call_name)) {
+    return;
+  }
+  lua_insert(L,1);
+  lua_call(L,lua_gettop(L)-1,lua_gettop(L)-1);
+}
+
 static int autotype_inext(lua_State *L)
 {
+  filter_call(L,1,"__pre_inext");//obj,key
   luaL_getmetafield(L,1,"__len");
   lua_pushvalue(L,-3);
   lua_call(L,1,1);
@@ -122,6 +141,7 @@ static int autotype_inext(lua_State *L)
   if(length == 0) {
     lua_pop(L,1);
     lua_pushnil(L);
+    filter_call(L,1,"__post_inext");//obj,nil (length is nil)
     return 1;
   }else if(lua_isnil(L,-1)) {
     key = 1;
@@ -129,6 +149,7 @@ static int autotype_inext(lua_State *L)
     lua_pushnumber(L,key);
     lua_pushnumber(L,key);
     lua_gettable(L,-3);
+    filter_call(L,1,"__post_inext");//obj,1,obj[1] (first value)
     return 2;
   } else if(luaL_checknumber(L,-1) < length) {
     key = lua_tonumber(L,-1) +1;
@@ -136,11 +157,13 @@ static int autotype_inext(lua_State *L)
     lua_pushnumber(L,key);
     lua_pushnumber(L,key);
     lua_gettable(L,-3);
+    filter_call(L,1,"__post_inext");//obj,key+1,obj[key+1] 
     return 2;
   } else  {
     // we reached the end of ipairs
     lua_pop(L,1);
     lua_pushnil(L);
+    filter_call(L,1,"__post_inext");//obj,nil (end reached)
     return 1;
   }
 }
@@ -157,6 +180,7 @@ static int autotype_next(lua_State *L)
 
     */
       //printf("aaaaa %s %d\n",__FUNCTION__,__LINE__);
+  filter_call(L,1,"__pre_next"); //obj,key
   if(luaL_getmetafield(L,1,"__len")) {
     lua_pushvalue(L,-3);
     lua_call(L,1,1);
@@ -183,6 +207,7 @@ static int autotype_next(lua_State *L)
       lua_pushnumber(L,key);
       lua_pushnumber(L,key);
       lua_gettable(L,-3);
+      filter_call(L,1,"__post_next"); //obj,key+1,obj[key+1] (key+1 is a number)
       return 2;
     }
   }
@@ -214,6 +239,8 @@ static int autotype_next(lua_State *L)
         //hacky way to avoid a subfunction just to do a pcall around getting a value in a table
         int result = dt_lua_dostring(L,"args ={...}; return args[1][args[2]]",2,1);
         if(result == LUA_OK) {
+          lua_remove(L,-3);
+          filter_call(L,1,"__post_next"); //obj,key+1,obj[key+1] (key+1 is in __get)
           return 2;
         } else {
           lua_pop(L,1);
@@ -230,6 +257,7 @@ static int autotype_next(lua_State *L)
 
   // stack at this point : {object,key}
   if(lua_isnil(L,-1)) {
+    filter_call(L,1,"__post_next"); //obj,nil (no next value)
     return 1;
   } else {
     return luaL_error(L,"invalid key to 'next' : %s",lua_tostring(L,2));
@@ -240,22 +268,27 @@ static int autotype_next(lua_State *L)
 
 static int autotype_ipairs(lua_State *L)
 {
+  filter_call(L,1,"__pre_ipairs");//obj
   luaL_getmetafield(L,1,"__inext");
   lua_pushvalue(L,-2);
   lua_pushinteger(L,0); // index set to 0 for reset
+  filter_call(L,1,"__post_ipairs");//obj,inext_fun,obj,nil
   return 3;
 }
 
 static int autotype_pairs(lua_State *L)
 {
+  filter_call(L,1,"__pre_pairs");//obj
   luaL_getmetafield(L,1,"__next");
   lua_pushvalue(L,-2);
   lua_pushnil(L); // index set to null for reset
+  filter_call(L,1,"__post_pairs");//obj,next_fun,obj,nil
   return 3;
 }
 
 static int autotype_index(lua_State *L)
 {
+  filter_call(L,1,"__pre_index");//obj,key
   luaL_getmetafield(L,1,"__get");
   int pos_get = lua_gettop(L); // points at __get
   lua_pushvalue(L,-2);
@@ -275,14 +308,16 @@ static int autotype_index(lua_State *L)
   lua_pushvalue(L,-4);
   lua_call(L,2,LUA_MULTRET);
   lua_remove(L,pos_get);
+  filter_call(L,1,"__post_index");// obj, key, returnval....
   return (lua_gettop(L)-pos_get+1);
 }
 
 
 static int autotype_newindex(lua_State *L)
 {
+  filter_call(L,1,"__pre_newindex");//obj,key,val
   luaL_getmetafield(L,1,"__set");
-  int pos_set = lua_gettop(L); // points at __get
+  int pos_set = lua_gettop(L); // points at __set
   lua_pushvalue(L,-3);
   lua_gettable(L,-2);
   if(lua_isnil(L,-1) && lua_isnumber(L,-4)) {
@@ -301,6 +336,7 @@ static int autotype_newindex(lua_State *L)
   lua_pushvalue(L,-5);
   lua_call(L,3,LUA_MULTRET);
   lua_remove(L,pos_set);
+  filter_call(L,1,"__post_newindex");//obj,key,val,retval....
   return (lua_gettop(L)-pos_set+1);
 }
 

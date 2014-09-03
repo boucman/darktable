@@ -105,20 +105,6 @@ luaA_Type dt_lua_module_get_preset_type(lua_State *L, const char* module_type_na
   return entry_type;
 
 }
-void dt_lua_register_current_preset(lua_State*L, const char* module_type_name, const char*entry_name, lua_CFunction pusher, lua_CFunction getter) {
-  // stack usefull values
-  dt_lua_module_push_entry(L,module_type_name,entry_name);
-  void * entry =  *(void**)lua_touserdata(L,-1);
-  luaA_Type entry_type = dt_lua_module_get_entry_type(L,module_type_name,entry_name);
-  lua_pop(L,1);
-
-  char tmp_string[1024];
-  snprintf(tmp_string, sizeof(tmp_string),"module_current_settings_%s_%s",module_type_name,entry_name);
-  dt_lua_init_wrapped_singleton(L,pusher,getter,tmp_string,entry);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,entry_type,"settings");
-}
-
 
 
 int dt_lua_init_modules(lua_State *L)
