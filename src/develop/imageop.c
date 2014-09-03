@@ -272,6 +272,10 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
     if(!g_module_symbol(module->module, "get_introspection_linear", (gpointer)&(module->get_introspection_linear))) goto error;
   }
 
+#ifdef USE_LUA
+  dt_lua_register_iop(darktable.lua_state.state,module);
+#endif
+
   if(module->init_global) module->init_global(module);
   return 0;
 error:
@@ -391,7 +395,6 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
 
   // now init the instance:
   module->init(module);
-
   /* initialize blendop params and default values */
   module->blend_params = g_malloc0(sizeof(dt_develop_blend_params_t));
   module->default_blendop_params = g_malloc0(sizeof(dt_develop_blend_params_t));

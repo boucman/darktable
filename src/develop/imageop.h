@@ -32,6 +32,12 @@
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
 
+#ifdef USE_LUA
+#include "lua/types.h"
+#include "lua/modules.h"
+#include "lua/iop.h"
+#endif
+
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;

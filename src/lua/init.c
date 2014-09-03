@@ -58,6 +58,7 @@ static lua_CFunction early_init_funcs[] =
   dt_lua_init_format,
   dt_lua_init_storage,
   dt_lua_init_lib,
+  dt_lua_init_iop,
   dt_lua_init_view,
   NULL
 };

@@ -437,6 +437,7 @@ if(USE_LUA)
       "lua/gui.c"
       "lua/image.c"
       "lua/init.c"
+      "lua/iop.c"
       "lua/lib.c"
       "lua/lua.c"
       "lua/luastorage.c"
