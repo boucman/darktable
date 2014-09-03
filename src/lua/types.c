@@ -315,6 +315,13 @@ static int autotype_index(lua_State *L)
 
 static int autotype_newindex(lua_State *L)
 {
+  lua_getuservalue(L,1);
+  lua_getfield(L,-1,"__readonly");
+  if(lua_toboolean(L,-1)) {
+    return luaL_error(L,"field \"%s\" can't be written for this object\n",lua_tostring(L,2));
+  }
+  lua_pop(L,2);
+
   filter_call(L,1,"__pre_newindex");//obj,key,val
   luaL_getmetafield(L,1,"__set");
   int pos_set = lua_gettop(L); // points at __set
@@ -327,6 +334,7 @@ static int autotype_newindex(lua_State *L)
   }
   if(lua_isnil(L,-1))
   {
+    // no set function
     lua_pop(L,1);
     luaL_getmetafield(L,-4,"__luaA_TypeName");
     return luaL_error(L,"field \"%s\" can't be written for type %s\n",lua_tostring(L,-4),lua_tostring(L,-1));
@@ -382,9 +390,10 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     lua_pop(L,1);
     int* udata = lua_newuserdata(L,sizeof(int));
     *udata = singleton;
+    lua_newtable(L);
+    lua_setuservalue(L,-2);
     luaL_setmetatable(L,luaA_typename(L,type_id));
     lua_pushinteger(L,singleton);
-    // warning : no uservalue
     lua_pushvalue(L,-2);
     lua_settable(L,-4);
     if (luaL_getmetafield(L, -1, "__init")) {
@@ -447,6 +456,7 @@ static void gpointer_tofunc(lua_State*L, luaA_Type type_id, void* cout, int inde
 void dt_lua_type_register_type(lua_State* L,luaA_Type type_id,const char* name)
 {
   luaL_getmetatable(L,luaA_typename(L,type_id)); // gets the metatable since it's supposed to exist
+
   luaL_getsubtable(L,-1,"__get");
   lua_pushvalue(L,-3);
   lua_setfield(L,-2,name);
@@ -747,6 +757,15 @@ luaA_Type dt_lua_init_gpointer_type_type(lua_State* L, luaA_Type type_id)
   return type_id;
 }
 
+int dt_lua_make_readonly(lua_State *L,int index)
+{
+  filter_call(L,1,"__pre_readonly");//obj
+  lua_getuservalue(L,index);
+  lua_pushboolean(L,true);
+  lua_setfield(L,-2,"__readonly");
+  lua_pop(L,1);
+  return 0;
+}
 
 gboolean dt_lua_isa_type(lua_State *L, int index, luaA_Type type_id)
 {
@@ -774,6 +793,9 @@ gboolean dt_lua_typeisa_type(lua_State *L, luaA_Type obj_type, luaA_Type type_id
   return dt_lua_typeisa_type(L,parent_type,type_id);
 
 }
+
+
+
 
 int dt_lua_init_types(lua_State *L)
 {

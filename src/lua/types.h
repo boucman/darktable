@@ -62,7 +62,7 @@ typedef double progress_double; // a double in [0.0,1.0] any value out of bound 
  * __post_* : see in types.c for exact calling convention (documented at call site)
              contains at least the object and the returned values
              allows to tweak after the real function is called
-     can be : pairs,ipairs,next,inext,index,newindex
+     can be : pairs,ipairs,next,inext,index,newindex,readonly(pre-only)
  * __init : obj, ptr used to make obje to tweak obj before it's used
 
    */
@@ -143,6 +143,10 @@ luaA_Type dt_lua_init_gpointer_type_type(lua_State* L,luaA_Type type_id);
  */
 luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name,void* data);
 
+/**
+ * make an INSTANCE of a type read-only
+ */
+int dt_lua_make_readonly(lua_State *L,int index);
 
 int dt_lua_init_types(lua_State *L);
 
