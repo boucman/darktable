@@ -408,6 +408,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 
     /* raise view changed signal */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, v, nv);
+    printf("%s %d : view changed %p -> %p \n",__FUNCTION__,__LINE__,v,nv);
 
     /* add endmarkers to left and right center containers */
     GtkWidget *endmarker = gtk_drawing_area_new();
