@@ -423,6 +423,10 @@ static void int_tofunc(lua_State *L, luaA_Type type_id, void *cout, int index)
 
 static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
+  if(!cin) {
+    lua_pushnil(L);
+    return 1;
+  }
   luaL_getsubtable(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
   gpointer singleton = *(gpointer *)cin;
   lua_pushlightuserdata(L, singleton);
@@ -436,7 +440,6 @@ static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     *udata = singleton;
     luaL_setmetatable(L, luaA_typename(L, type_id));
     lua_pushlightuserdata(L, singleton);
-    printf("%s %d : registered %p\n",__FUNCTION__,__LINE__,singleton);
     lua_pushvalue(L, -2);
     lua_settable(L, -4);
     if(luaL_getmetafield(L, -1, "__init"))
@@ -463,13 +466,16 @@ static void gpointer_tofunc(lua_State *L, luaA_Type type_id, void *cout, int ind
 
 static int unknown_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
+  if(!cin) {
+    lua_pushnil(L);
+    return 1;
+  }
   luaL_getsubtable(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
   gpointer singleton = *(gpointer *)cin;
   lua_pushlightuserdata(L, singleton);
   lua_gettable(L, -2);
   if(lua_isnoneornil(L, -1))
   {
-    printf("%s %d : error with %p\n",__FUNCTION__,__LINE__,cin);
     return luaL_error(L,"Attempting to push a pointer of unknown type on the stack\n");
   }
   lua_remove(L, -2); //dt_lua_gpointer_values
@@ -717,7 +723,6 @@ luaA_Type dt_lua_init_singleton(lua_State *L, const char *unique_name, void *dat
   {
     *udata = data;
     luaL_getsubtable(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
-    printf("%s %d : registered %p\n",__FUNCTION__,__LINE__,data);
     lua_pushlightuserdata(L, data);
     lua_pushvalue(L,-3);
     lua_settable(L,-3);

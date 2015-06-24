@@ -472,6 +472,7 @@ static int register_storage(lua_State *L)
 
 int dt_lua_init_luastorages(lua_State *L)
 {
+  printf("TBSL  view enter and view leave\n");
   dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "register_storage");
   lua_pushcfunction(L, &register_storage);
