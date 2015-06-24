@@ -83,6 +83,7 @@ int dt_lua_init_view(lua_State *L)
   dt_lua_event_add(L, "view-changed");
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
                             G_CALLBACK(on_view_changed), NULL);
+    printf("%s %d : signal connected\n",__FUNCTION__,__LINE__);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

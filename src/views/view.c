@@ -183,6 +183,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->accel_closures = NULL;
 
 #ifdef USE_LUA
+    printf("%s %d : registering view %s, %p\n",__FUNCTION__,__LINE__,view->module_name,view);
   dt_lua_register_view(darktable.lua_state.state, view);
 #endif
 
